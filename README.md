@@ -1,1 +1,215 @@
-# DATE__DAY
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>კვირის დღის გამომთვლელი</title>
+    <style>
+        :root {
+            --primary-color: #5c67f2;
+            --error-color: #e74c3c;
+            --bg-color: #f0f2f5;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            user-select: none; 
+            -webkit-user-select: none;
+        }
+
+        .container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 350px;
+        }
+
+        h2 { 
+            color: #2c3e50; 
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            color: #7f8c8d;
+            font-weight: 600;
+            margin-left: 2px;
+        }
+
+        /* ყველა ველის (input და select) ერთიანი სტილი */
+        select, input {
+            padding: 12px;
+            border: 2px solid #edf2f7;
+            border-radius: 10px;
+            font-size: 1rem;
+            outline: none;
+            width: 100%;
+            background: white;
+            box-sizing: border-box; /* უზრუნველყოფს თანაბარ სიგანეს */
+            transition: border-color 0.3s;
+        }
+
+        select:focus, input:focus {
+            border-color: var(--primary-color);
+        }
+
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-top: 10px;
+            transition: all 0.2s;
+        }
+
+        button:active { transform: scale(0.98); }
+
+        #display-area {
+            margin-top: 20px;
+            min-height: 60px;
+            text-align: center;
+        }
+
+        .result-text {
+            color: #2c3e50;
+            font-size: 1.05rem;
+            background: #f8f9ff;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid var(--primary-color);
+            line-height: 1.6;
+        }
+
+        .error-text {
+            color: var(--error-color);
+            background: #fff5f5;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #fed7d7;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body oncontextmenu="return false;">
+
+<div class="container">
+    <h2>რა დღე იყო?</h2>
+    
+    <div class="form-group">
+        <label>წელი</label>
+        <input type="number" id="year" placeholder="მაგ: 2026" value="2026">
+    </div>
+
+    <div class="form-group">
+        <label>თვე</label>
+        <select id="month">
+            <option value="13">იანვარი</option>
+            <option value="14">თებერვალი</option>
+            <option value="3">მარტი</option>
+            <option value="4">აპრილი</option>
+            <option value="5">მაისი</option>
+            <option value="6">ივნისი</option>
+            <option value="7">ივლისი</option>
+            <option value="8">აგვისტო</option>
+            <option value="9">სექტემბერი</option>
+            <option value="10">ოქტომბერი</option>
+            <option value="11">ნოემბერი</option>
+            <option value="12">დეკემბერი</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>დღე</label>
+        <select id="day"></select>
+    </div>
+
+    <button onclick="calculateDay()">გამოთვლა</button>
+
+    <div id="display-area"></div>
+</div>
+
+<script>
+    // დღეების სიის შევსება ჩატვირთვისას
+    window.onload = function() {
+        const daySelect = document.getElementById('day');
+        for (let d = 1; d <= 31; d++) {
+            let opt = document.createElement('option');
+            opt.value = d;
+            opt.innerHTML = d;
+            daySelect.appendChild(opt);
+        }
+    };
+
+    function calculateDay() {
+        const displayArea = document.getElementById('display-area');
+        let q = parseInt(document.getElementById('day').value);
+        let m = parseInt(document.getElementById('month').value);
+        let yearInput = parseInt(document.getElementById('year').value);
+        
+        displayArea.innerHTML = '';
+
+        if (!yearInput || isNaN(yearInput)) {
+            displayArea.innerHTML = '<div class="error-text">გთხოვთ, მიუთითოთ წელი</div>';
+            return;
+        }
+
+        // ალგორითმის ლოგიკა
+        let calcYear = (m > 12) ? yearInput - 1 : yearInput;
+        let realMonth = (m > 12) ? m - 12 : m;
+        
+        // თარიღის რეალურობის შემოწმება
+        let dateObj = new Date(yearInput, realMonth - 1, q);
+        if (dateObj.getMonth() !== realMonth - 1) {
+            displayArea.innerHTML = `<div class="error-text">შეცდომა: ${yearInput} წლის ამ თვეში ${q} რიცხვი არ არსებობს!</div>`;
+            return;
+        }
+
+        let K = calcYear % 100;
+        let J = Math.floor(calcYear / 100);
+        let h = (q + Math.floor((13*(m+1))/5) + K + Math.floor(K/4) + Math.floor(J/4) - 2*J) % 7;
+        if (h < 0) h += 7;
+
+        const days = ["შაბათი", "კვირა", "ორშაბათი", "სამშაბათი", "ოთხშაბათი", "ხუთშაბათი", "პარასკევი"];
+        const monthsInGeo = ["იანვარი", "თებერვალი", "მარტი", "აპრილი", "მაისი", "ივნისი", "ივლისი", "აგვისტო", "სექტემბერი", "ოქტომბერი", "ნოემბერი", "დეკემბერი"];
+        
+        displayArea.innerHTML = `
+            <div class="result-text">
+                ${yearInput} წლის ${q} ${monthsInGeo[realMonth-1]} არის <br>
+                <strong>${days[h]}</strong>
+            </div>`;
+    }
+
+    // დაცვის ფუნქციები
+    document.onkeydown = function(e) {
+        if(event.keyCode == 123) return false;
+        if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
+        if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false;
+        if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
+        if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
+    }
+</script>
+
+</body>
+</html>
